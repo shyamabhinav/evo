@@ -105,15 +105,48 @@
       gain.connect(ctx.destination);
 
       if (type === 'complete') {
+        // Rich victory fanfare: percussive hit + harmony chord + rising sweep
+        // Percussive hit
+        const noise = ctx.createOscillator();
+        const noiseGain = ctx.createGain();
+        noise.connect(noiseGain);
+        noiseGain.connect(ctx.destination);
+        noise.type = 'square';
+        noise.frequency.setValueAtTime(180, now);
+        noise.frequency.exponentialRampToValueAtTime(60, now + 0.08);
+        noiseGain.gain.setValueAtTime(0.15, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        noise.start(now);
+        noise.stop(now + 0.1);
+
+        // Main melody arpeggio (triangle)
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, now);
-        osc.frequency.setValueAtTime(659.25, now + 0.08);
-        osc.frequency.setValueAtTime(783.99, now + 0.16);
-        osc.frequency.setValueAtTime(1046.50, now + 0.24);
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-        osc.start(now);
-        osc.stop(now + 0.4);
+        osc.frequency.setValueAtTime(523.25, now + 0.05);
+        osc.frequency.setValueAtTime(659.25, now + 0.15);
+        osc.frequency.setValueAtTime(783.99, now + 0.25);
+        osc.frequency.setValueAtTime(1046.50, now + 0.35);
+        osc.frequency.setValueAtTime(1318.51, now + 0.50);
+        gain.gain.setValueAtTime(0.14, now + 0.05);
+        gain.gain.setValueAtTime(0.16, now + 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+        osc.start(now + 0.05);
+        osc.stop(now + 0.9);
+
+        // Harmony layer (sine, a third above)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(659.25, now + 0.05);
+        osc2.frequency.setValueAtTime(783.99, now + 0.15);
+        osc2.frequency.setValueAtTime(987.77, now + 0.25);
+        osc2.frequency.setValueAtTime(1318.51, now + 0.35);
+        osc2.frequency.setValueAtTime(1567.98, now + 0.50);
+        gain2.gain.setValueAtTime(0.08, now + 0.05);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+        osc2.start(now + 0.05);
+        osc2.stop(now + 0.9);
       } else if (type === 'levelup') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(440, now);
@@ -144,6 +177,221 @@
     } catch (err) {
       // Audio autoplay policy catch
     }
+  }
+  // ==========================================
+  // 2B. BACKGROUND MUSIC ENGINE (PROCEDURAL CHIPTUNE)
+  // ==========================================
+  const MUSIC_STORAGE_KEY = 'evo-music-prefs';
+  let musicPlaying = false;
+  let musicNodes = [];
+  let musicGainNode = null;
+  let musicTrackIndex = 0;
+  let musicVolume = 0.4;
+  let musicLoopTimer = null;
+
+  function loadMusicPrefs() {
+    try {
+      const saved = localStorage.getItem(MUSIC_STORAGE_KEY);
+      if (saved) {
+        const p = JSON.parse(saved);
+        musicPlaying = p.playing || false;
+        musicTrackIndex = p.track || 0;
+        musicVolume = p.volume !== undefined ? p.volume : 0.4;
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function saveMusicPrefs() {
+    localStorage.setItem(MUSIC_STORAGE_KEY, JSON.stringify({
+      playing: musicPlaying,
+      track: musicTrackIndex,
+      volume: musicVolume
+    }));
+  }
+
+  function stopMusic() {
+    musicPlaying = false;
+    if (musicLoopTimer) { clearInterval(musicLoopTimer); musicLoopTimer = null; }
+    musicNodes.forEach(n => { try { n.stop(); } catch(e) {} });
+    musicNodes = [];
+    const btn = document.getElementById('btn-music-toggle');
+    if (btn) { btn.textContent = '🔇'; btn.classList.remove('active'); }
+    saveMusicPrefs();
+  }
+
+  function startMusic(trackIdx) {
+    stopMusic();
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    musicPlaying = true;
+    musicTrackIndex = trackIdx !== undefined ? trackIdx : musicTrackIndex;
+
+    // Master gain for music
+    musicGainNode = ctx.createGain();
+    musicGainNode.gain.value = musicVolume * 0.3; // keep music subtle
+    musicGainNode.connect(ctx.destination);
+
+    const btn = document.getElementById('btn-music-toggle');
+    if (btn) { btn.textContent = '🔊'; btn.classList.add('active'); }
+
+    if (musicTrackIndex === 0) playTrackAdventure(ctx);
+    else if (musicTrackIndex === 1) playTrackChill(ctx);
+    else playTrackBattle(ctx);
+
+    saveMusicPrefs();
+  }
+
+  // Track 0: Quest Adventure — bouncy 8-bit arpeggio loop
+  function playTrackAdventure(ctx) {
+    const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 261.63, 196.00];
+    const bpm = 140;
+    const noteLen = 60 / bpm;
+    let beatIdx = 0;
+
+    function playBeat() {
+      if (!musicPlaying) return;
+      const now = ctx.currentTime;
+      const freq = notes[beatIdx % notes.length];
+
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g);
+      g.connect(musicGainNode);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, now);
+      g.gain.setValueAtTime(0.3, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + noteLen * 0.8);
+      osc.start(now);
+      osc.stop(now + noteLen * 0.85);
+      musicNodes.push(osc);
+
+      // Bass note every 2 beats
+      if (beatIdx % 2 === 0) {
+        const bass = ctx.createOscillator();
+        const bg = ctx.createGain();
+        bass.connect(bg);
+        bg.connect(musicGainNode);
+        bass.type = 'triangle';
+        bass.frequency.setValueAtTime(freq / 2, now);
+        bg.gain.setValueAtTime(0.2, now);
+        bg.gain.exponentialRampToValueAtTime(0.001, now + noteLen * 1.5);
+        bass.start(now);
+        bass.stop(now + noteLen * 1.6);
+        musicNodes.push(bass);
+      }
+      beatIdx++;
+    }
+
+    playBeat();
+    musicLoopTimer = setInterval(playBeat, noteLen * 1000);
+  }
+
+  // Track 1: Chill Focus — slow ambient pad chords
+  function playTrackChill(ctx) {
+    const chords = [
+      [261.63, 329.63, 392.00],
+      [220.00, 277.18, 329.63],
+      [246.94, 311.13, 369.99],
+      [196.00, 246.94, 293.66]
+    ];
+    let chordIdx = 0;
+
+    function playChord() {
+      if (!musicPlaying) return;
+      const now = ctx.currentTime;
+      const chord = chords[chordIdx % chords.length];
+
+      chord.forEach(freq => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.connect(g);
+        g.connect(musicGainNode);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        g.gain.setValueAtTime(0.15, now);
+        g.gain.setValueAtTime(0.15, now + 1.5);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 2.8);
+        osc.start(now);
+        osc.stop(now + 3.0);
+        musicNodes.push(osc);
+      });
+      chordIdx++;
+    }
+
+    playChord();
+    musicLoopTimer = setInterval(playChord, 3000);
+  }
+
+  // Track 2: Battle Drums — driving bass with percussive hits
+  function playTrackBattle(ctx) {
+    const bassNotes = [82.41, 98.00, 73.42, 110.00];
+    const bpm = 160;
+    const noteLen = 60 / bpm;
+    let beatIdx = 0;
+
+    function playBeat() {
+      if (!musicPlaying) return;
+      const now = ctx.currentTime;
+
+      // Kick drum (low square wave burst)
+      if (beatIdx % 2 === 0) {
+        const kick = ctx.createOscillator();
+        const kg = ctx.createGain();
+        kick.connect(kg);
+        kg.connect(musicGainNode);
+        kick.type = 'square';
+        kick.frequency.setValueAtTime(150, now);
+        kick.frequency.exponentialRampToValueAtTime(40, now + 0.1);
+        kg.gain.setValueAtTime(0.35, now);
+        kg.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        kick.start(now);
+        kick.stop(now + 0.16);
+        musicNodes.push(kick);
+      }
+
+      // Hi-hat (noise-like high freq)
+      const hat = ctx.createOscillator();
+      const hg = ctx.createGain();
+      hat.connect(hg);
+      hg.connect(musicGainNode);
+      hat.type = 'sawtooth';
+      hat.frequency.setValueAtTime(800 + Math.random() * 400, now);
+      hg.gain.setValueAtTime(0.06, now);
+      hg.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      hat.start(now);
+      hat.stop(now + 0.06);
+      musicNodes.push(hat);
+
+      // Bass line every 4 beats
+      if (beatIdx % 4 === 0) {
+        const bass = ctx.createOscillator();
+        const bg = ctx.createGain();
+        bass.connect(bg);
+        bg.connect(musicGainNode);
+        bass.type = 'sawtooth';
+        const bFreq = bassNotes[Math.floor(beatIdx / 4) % bassNotes.length];
+        bass.frequency.setValueAtTime(bFreq, now);
+        bg.gain.setValueAtTime(0.25, now);
+        bg.gain.exponentialRampToValueAtTime(0.001, now + noteLen * 3);
+        bass.start(now);
+        bass.stop(now + noteLen * 3.1);
+        musicNodes.push(bass);
+      }
+      beatIdx++;
+    }
+
+    playBeat();
+    musicLoopTimer = setInterval(playBeat, noteLen * 1000);
+  }
+
+  function setMusicVolume(vol) {
+    musicVolume = Math.max(0, Math.min(1, vol));
+    if (musicGainNode) {
+      musicGainNode.gain.value = musicVolume * 0.3;
+    }
+    saveMusicPrefs();
   }
 
   // ==========================================
@@ -203,7 +451,11 @@
   }
 
   function getTodayStr() {
-    return new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   function todayCount(s) {
@@ -921,9 +1173,33 @@ Return JSON in this format:
     playSfx('complete');
   }
 
+  // Minimum wait times per difficulty (arithmetic progression: 10, 20, 30, 40, 50 min)
+  const QUEST_COOLDOWN_MINUTES = { 1: 10, 2: 20, 3: 30, 4: 40, 5: 50 };
+
+  function getQuestCooldownRemaining(quest) {
+    const diff = Math.max(1, Math.min(5, Number(quest.difficulty) || 1));
+    const minMs = (QUEST_COOLDOWN_MINUTES[diff] || 10) * 60 * 1000;
+    const elapsed = Date.now() - (quest.createdAt || Date.now());
+    return Math.max(0, minMs - elapsed);
+  }
+
+  function formatCooldown(ms) {
+    const totalSec = Math.ceil(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
   function completeQuest(id) {
     const idx = state.quests.findIndex(q => q.id === id);
     if (idx === -1) return;
+
+    // Anti-XP-farm: enforce minimum duration
+    const remaining = getQuestCooldownRemaining(state.quests[idx]);
+    if (remaining > 0) {
+      showToast(`⏳ Quest locked! Wait ${formatCooldown(remaining)} before completing.`);
+      return;
+    }
 
     const quest = state.quests.splice(idx, 1)[0];
     quest.status = 'completed';
@@ -1003,8 +1279,15 @@ Return JSON in this format:
         const cat = (q.category && CATEGORY_ICONS[q.category]) ? q.category : 'study';
         const icon = CATEGORY_ICONS[cat] || '⚔️';
         const typeName = (q.type || 'daily').charAt(0).toUpperCase() + (q.type || 'daily').slice(1);
-
         card.className = `quest-card rarity-${rarity}`;
+
+        const cooldownMs = getQuestCooldownRemaining(q);
+        const isLocked = cooldownMs > 0;
+        const btnLabel = isLocked
+          ? `⏳ LOCKED (${formatCooldown(cooldownMs)} remaining)`
+          : '⚔️ COMPLETE MISSION';
+        const btnClass = isLocked ? 'btn-complete btn-locked' : 'btn-primary btn-complete';
+
         card.innerHTML = `
           <div class="qc-rarity-bar rarity-${rarity}"></div>
           <div class="qc-header">
@@ -1023,12 +1306,40 @@ Return JSON in this format:
               🤖 AI Breakdown
             </button>
           </div>
-          <button class="btn-primary btn-complete" data-id="${q.id}" style="margin-top:12px;width:100%;">
-            ⚔️ COMPLETE MISSION
+          <button class="${btnClass}" data-id="${q.id}" ${isLocked ? 'disabled' : ''} style="margin-top:12px;width:100%;">
+            ${btnLabel}
           </button>
         `;
         grid.appendChild(card);
       });
+
+      // Start cooldown ticker to update locked buttons every second
+      if (window._questCooldownInterval) clearInterval(window._questCooldownInterval);
+      window._questCooldownInterval = setInterval(() => {
+        let anyLocked = false;
+        grid.querySelectorAll('.btn-complete').forEach(btn => {
+          const qId = btn.dataset.id;
+          const quest = state.quests.find(qq => qq.id === qId);
+          if (!quest) return;
+          const rem = getQuestCooldownRemaining(quest);
+          if (rem > 0) {
+            anyLocked = true;
+            btn.textContent = `⏳ LOCKED (${formatCooldown(rem)} remaining)`;
+            btn.disabled = true;
+            btn.classList.add('btn-locked');
+            btn.classList.remove('btn-primary');
+          } else if (btn.disabled) {
+            btn.textContent = '⚔️ COMPLETE MISSION';
+            btn.disabled = false;
+            btn.classList.remove('btn-locked');
+            btn.classList.add('btn-primary');
+          }
+        });
+        if (!anyLocked) {
+          clearInterval(window._questCooldownInterval);
+          window._questCooldownInterval = null;
+        }
+      }, 1000);
 
       grid.querySelectorAll('.btn-complete').forEach(btn => {
         btn.addEventListener('click', (e) => completeQuest(e.currentTarget.dataset.id));
@@ -1049,9 +1360,13 @@ Return JSON in this format:
 
     if (statActive) statActive.textContent = state.quests.length;
     const today = getTodayStr();
-    const todayCompleted = state.completedQuests.filter(q =>
-      new Date(q.completedAt).toISOString().split('T')[0] === today
-    );
+    const todayCompleted = state.completedQuests.filter(q => {
+      const cd = new Date(q.completedAt);
+      const y = cd.getFullYear();
+      const m = String(cd.getMonth() + 1).padStart(2, '0');
+      const d = String(cd.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}` === today;
+    });
     if (statCompleted) statCompleted.textContent = todayCompleted.length;
     if (statXP) statXP.textContent = todayCompleted.reduce((sum, q) => sum + (Number(q.xp) || 0), 0);
   }
@@ -1185,6 +1500,7 @@ Return JSON in this format:
     setStat('pstat-streak', state.streak.current);
     setStat('pstat-longest', state.streak.longest);
     setStat('pstat-badges', state.achievements.length);
+    setStat('pstat-gold', state.gold.toLocaleString());
     setStat('pstat-level', state.level);
 
     // Heatmap
@@ -1464,12 +1780,55 @@ Return JSON in this format:
 
     const btnEnter = document.getElementById('btn-enter');
     if (btnEnter) {
-      btnEnter.addEventListener('click', () => {
+      btnEnter.addEventListener('click', async () => {
         const name = document.getElementById('input-username').value.trim();
+        const errorEl = document.getElementById('login-error');
         if (!name) {
-          document.getElementById('login-error').textContent = 'Please enter a hero name.';
+          errorEl.textContent = 'Please enter a hero name.';
           return;
         }
+        if (name.length > 20) {
+          errorEl.textContent = 'Hero name must be 20 characters or less.';
+          return;
+        }
+
+        // Check for duplicate username in Firestore
+        if (db) {
+          try {
+            btnEnter.disabled = true;
+            btnEnter.textContent = '⏳ Checking name...';
+            const snapshot = await db.collection('players')
+              .where('name', '==', name)
+              .limit(1)
+              .get();
+
+            const isTakenBySomeoneElse = !snapshot.empty &&
+              (!currentUser || snapshot.docs[0].id !== currentUser.uid);
+
+            if (isTakenBySomeoneElse) {
+              const base = name.replace(/[_\-\d]+$/, '');
+              const r1 = Math.floor(Math.random() * 900) + 100;
+              const r2 = Math.floor(Math.random() * 90) + 10;
+              const suggestions = [
+                `${base}_${r1}`,
+                `x${base}x`,
+                `${base}${r2}`
+              ].map(s => s.slice(0, 20));
+              errorEl.innerHTML = `⚠️ "<strong>${name}</strong>" is already taken! Try:<br>` +
+                suggestions.map(s => `• <strong>${s}</strong>`).join('<br>');
+              btnEnter.disabled = false;
+              btnEnter.innerHTML = '<span class="btn-text">⚡ ENTER THE ARENA ⚡</span>';
+              return;
+            }
+          } catch (e) {
+            console.warn('Username check failed, proceeding anyway:', e.message);
+          } finally {
+            btnEnter.disabled = false;
+            btnEnter.innerHTML = '<span class="btn-text">⚡ ENTER THE ARENA ⚡</span>';
+          }
+        }
+
+        errorEl.textContent = '';
         state.user.name = name;
         const selectedAvatar = document.querySelector('.avatar-option.selected');
         const selectedClass = document.querySelector('.class-option.selected');

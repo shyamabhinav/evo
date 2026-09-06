@@ -179,6 +179,24 @@
         <span class="gold-icon">💰</span>
         <span class="gold-count" id="gold-count">0</span>
       </div>
+
+      <!-- Music Controls -->
+      <div class="music-controls" id="music-controls">
+        <button class="music-toggle-btn" id="btn-music-toggle" title="Toggle Music">🔇</button>
+        <div class="music-panel hidden" id="music-panel">
+          <div class="music-panel-header">🎵 Background Music</div>
+          <select class="music-track-select" id="music-track-select">
+            <option value="0">🗡️ Quest Adventure</option>
+            <option value="1">🧘 Chill Focus</option>
+            <option value="2">⚔️ Battle Drums</option>
+          </select>
+          <div class="music-volume-row">
+            <span class="music-vol-label">Vol</span>
+            <input type="range" id="music-volume" class="music-volume-slider" min="0" max="100" value="40" />
+          </div>
+        </div>
+      </div>
+
       <button class="hud-menu-toggle" id="hud-menu-toggle" aria-label="Toggle menu">☰</button>
     </div>
   </header>
