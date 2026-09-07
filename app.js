@@ -537,7 +537,7 @@
   // ==========================================
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    if (currentUser && db) {
+    if (db) {
       syncToFirestore();
     }
   }
@@ -943,21 +943,32 @@
   }
 
   async function syncToFirestore() {
-    if (!currentUser || !db) return;
+    if (!db) return;
+    if (!state.user || !state.user.name || !state.user.name.trim()) return;
+
+    let playerId = (currentUser && currentUser.uid);
+    if (!playerId) {
+      playerId = localStorage.getItem('evo_player_id');
+      if (!playerId) {
+        playerId = 'player_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36);
+        localStorage.setItem('evo_player_id', playerId);
+      }
+    }
+
     try {
-      await db.collection('players').doc(currentUser.uid).set({
-        name: state.user.name,
-        avatar: state.user.avatar,
-        class: state.user.class,
-        xp: state.xp,
-        weeklyXp: state.weeklyXP || 0,
-        level: state.level,
-        gold: state.gold,
-        questsCompleted: state.completedQuests.length,
-        streak: state.streak.current,
-        longestStreak: state.streak.longest,
-        badgeCount: state.achievements.length,
-        email: currentUser.email || '',
+      await db.collection('players').doc(playerId).set({
+        name: state.user.name.trim(),
+        avatar: state.user.avatar || '⚔️',
+        class: state.user.class || 'warrior',
+        xp: Number(state.xp) || 0,
+        weeklyXp: (state.weeklyXP !== undefined && state.weeklyXP !== null) ? Number(state.weeklyXP) : (Number(state.xp) || 0),
+        level: Number(state.level) || 1,
+        gold: Number(state.gold) !== undefined ? Number(state.gold) : 50,
+        questsCompleted: (state.completedQuests && state.completedQuests.length) || 0,
+        streak: (state.streak && state.streak.current) || 1,
+        longestStreak: (state.streak && state.streak.longest) || 1,
+        badgeCount: (state.achievements && state.achievements.length) || 0,
+        email: (currentUser && currentUser.email) || '',
         fullState: JSON.stringify({
           quests: state.quests,
           completedQuests: state.completedQuests,
@@ -1031,29 +1042,37 @@
 
   async function fetchLeaderboardData() {
     const isWeekly = (lbFilter === 'weekly');
-    const players = [];
+    const rawPlayers = [];
 
     // Query Firestore for real logged-in player accounts
     if (db) {
       try {
-        const orderField = isWeekly ? 'weeklyXp' : 'xp';
-        const snapshot = await db.collection('players')
-          .orderBy(orderField, 'desc')
-          .limit(50)
-          .get();
+        // Fetch all registered players without strict field-exclusion indexing
+        const snapshot = await db.collection('players').limit(100).get();
 
         snapshot.forEach(doc => {
           const data = doc.data();
           if (data && data.name && data.name.trim()) {
-            const isUser = Boolean((currentUser && doc.id === currentUser.uid) ||
-              (state.user && state.user.name && data.name.trim().toLowerCase() === state.user.name.trim().toLowerCase()));
-            players.push({
+            const isUser = Boolean(
+              (currentUser && doc.id === currentUser.uid) ||
+              (state.user && state.user.name && data.name.trim().toLowerCase() === state.user.name.trim().toLowerCase())
+            );
+
+            const totalXp = Number(data.xp) || 0;
+            // Gracefully fall back to total xp if weeklyXp is not recorded on older accounts
+            const weeklyXp = (data.weeklyXp !== undefined && data.weeklyXp !== null)
+              ? Number(data.weeklyXp)
+              : totalXp;
+            const score = isWeekly ? weeklyXp : totalXp;
+
+            rawPlayers.push({
               id: doc.id,
               name: data.name.trim(),
               avatar: data.avatar || '⚔️',
-              level: data.level || 1,
-              xp: isWeekly ? (data.weeklyXp || 0) : (data.xp || 0),
-              weeklyXp: data.weeklyXp || 0,
+              level: Number(data.level) || 1,
+              xp: score,
+              totalXp: totalXp,
+              weeklyXp: weeklyXp,
               isUser: isUser
             });
           }
@@ -1066,35 +1085,45 @@
     // Always include/update the currently active logged-in player account
     if (state.user && state.user.name && state.user.name.trim()) {
       const myNameLower = state.user.name.trim().toLowerCase();
-      const existingIdx = players.findIndex(p => p.isUser || (p.name && p.name.toLowerCase() === myNameLower));
-      const currentScore = isWeekly ? (state.weeklyXP || 0) : (state.xp || 0);
-      const currentLvl = state.level || 1;
+      const existingIdx = rawPlayers.findIndex(p => p.isUser || (p.name && p.name.toLowerCase() === myNameLower));
+      const currentScore = isWeekly ? (Number(state.weeklyXP) || Number(state.xp) || 0) : (Number(state.xp) || 0);
+      const currentLvl = Number(state.level) || 1;
 
       if (existingIdx !== -1) {
-        players[existingIdx].isUser = true;
+        rawPlayers[existingIdx].isUser = true;
         // Keep the latest local score if it has progressed further
-        if (currentScore > players[existingIdx].xp) {
-          players[existingIdx].xp = currentScore;
-          players[existingIdx].weeklyXp = state.weeklyXP || 0;
+        if (currentScore > rawPlayers[existingIdx].xp) {
+          rawPlayers[existingIdx].xp = currentScore;
+          rawPlayers[existingIdx].weeklyXp = Number(state.weeklyXP) || currentScore;
         }
-        if (currentLvl > players[existingIdx].level) {
-          players[existingIdx].level = currentLvl;
+        if (currentLvl > rawPlayers[existingIdx].level) {
+          rawPlayers[existingIdx].level = currentLvl;
         }
-        players[existingIdx].avatar = state.user.avatar || players[existingIdx].avatar;
+        rawPlayers[existingIdx].avatar = state.user.avatar || rawPlayers[existingIdx].avatar;
       } else {
-        players.push({
-          id: currentUser ? currentUser.uid : 'local_player',
+        rawPlayers.push({
+          id: (currentUser && currentUser.uid) || localStorage.getItem('evo_player_id') || 'local_player',
           name: state.user.name.trim(),
           avatar: state.user.avatar || '⚔️',
           level: currentLvl,
           xp: currentScore,
-          weeklyXp: state.weeklyXP || 0,
+          totalXp: Number(state.xp) || 0,
+          weeklyXp: Number(state.weeklyXP) || 0,
           isUser: true
         });
       }
     }
 
-    // Sort strictly by descending XP (NO random/mock competitors)
+    // Deduplicate by name (case-insensitive), preserving the highest score entry
+    const playerMap = new Map();
+    rawPlayers.forEach(p => {
+      const key = p.name.toLowerCase();
+      if (!playerMap.has(key) || p.xp > playerMap.get(key).xp) {
+        playerMap.set(key, p);
+      }
+    });
+
+    const players = Array.from(playerMap.values());
     players.sort((a, b) => (b.xp || 0) - (a.xp || 0));
     return players;
   }
