@@ -653,6 +653,19 @@
       </div>
 
       <div class="quest-form" id="ai-form">
+        <!-- AI Engine Status & Key Config Bar -->
+        <div class="ai-status-bar" id="ai-status-bar" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(0,255,200,0.06);border:1px solid rgba(0,255,200,0.2);border-radius:8px;margin-bottom:14px;font-size:12px;">
+          <span id="ai-status-indicator" style="color:#34d399;font-weight:600;">🟢 Live Grok AI Active</span>
+          <button type="button" id="btn-toggle-api-key" style="background:none;border:none;color:#a78bfa;cursor:pointer;font-size:11px;text-decoration:underline;">⚙️ API Key</button>
+        </div>
+        <div class="ai-key-drawer hidden" id="ai-key-drawer" style="margin-bottom:14px;padding:10px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;">
+          <label style="display:block;font-size:11px;margin-bottom:6px;color:#94a3b8;">Custom Groq / xAI API Key (Saved in browser):</label>
+          <div style="display:flex;gap:8px;">
+            <input type="password" id="input-custom-api-key" class="form-input" style="font-size:12px;padding:6px 10px;flex:1;" placeholder="gsk_... or xai-..." />
+            <button type="button" id="btn-save-api-key" class="btn-primary" style="padding:6px 14px;font-size:11px;white-space:nowrap;">Save Key</button>
+          </div>
+        </div>
+
         <div class="form-group">
           <label class="form-label">What research domain or hypothesis do you want to investigate?</label>
           <input type="text" id="ai-goal" class="form-input" placeholder="e.g., Transformer Attention Mechanics, Distributed Consensus, Epigenetics..." maxlength="120" />
