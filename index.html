@@ -38,6 +38,14 @@
           <span>⚡ QUICK PLAY / GUEST MODE (NO LOGIN)</span>
         </button>
 
+        <!-- Evaluator Demo Preset Button -->
+        <button type="button" class="evaluator-preset-btn" id="btn-demo-preset-auth">
+          <span>⚡ Evaluator Demo Preset (Lv 5 + 7-Day Streak + 500 Gold)</span>
+        </button>
+        <button type="button" class="evaluator-preset-off-btn" id="btn-demo-preset-off-auth" title="Turn Demo Preset OFF (Reset to Starter Hero)">
+          <span>🛑 Turn Demo Preset OFF</span>
+        </button>
+
         <div class="auth-divider" style="margin: 15px 0 10px;">
           <span class="auth-divider-line"></span>
           <span class="auth-divider-text">or sign in</span>
@@ -144,6 +152,14 @@
           <span class="btn-text">⚡ ENTER THE ARENA ⚡</span>
         </button>
 
+        <!-- Evaluator Demo Preset Button -->
+        <button type="button" class="evaluator-preset-btn" id="btn-demo-preset-landing">
+          <span>⚡ Evaluator Demo Preset (Lv 5 + 7-Day Streak + 500 Gold)</span>
+        </button>
+        <button type="button" class="evaluator-preset-off-btn" id="btn-demo-preset-off-landing" title="Turn Demo Preset OFF (Reset to Starter Hero)">
+          <span>🛑 Turn Demo Preset OFF</span>
+        </button>
+
         <p class="login-error" id="login-error"></p>
       </div>
     </div>
@@ -174,10 +190,35 @@
       <div class="hud-streak" id="hud-streak" title="Current Streak">
         <span class="streak-flame">🔥</span>
         <span class="streak-count" id="streak-count">0</span>
+        <span class="streak-shield-badge hidden" id="streak-shield-badge" title="Streak Shield Active! Protections ready.">🛡️</span>
       </div>
-      <div class="hud-gold" title="Gold">
+      <div class="hud-gold" id="hud-gold-btn" title="Gold / Item Shop (Click to open)" style="cursor:pointer;">
         <span class="gold-icon">💰</span>
         <span class="gold-count" id="gold-count">0</span>
+      </div>
+
+      <!-- Evaluator Demo Preset Buttons -->
+      <button class="hud-demo-btn" id="btn-demo-preset-hud" title="Activate Evaluator Demo Preset (Lv 5 + 7-Day Streak + 500 Gold)">⚡ Demo Preset</button>
+      <button class="hud-demo-off-btn" id="btn-demo-preset-off-hud" title="Turn Demo Preset OFF (Reset to Starter Hero)">🛑 Demo OFF</button>
+
+      <!-- Notification Center Controls -->
+      <div class="notify-controls" id="notify-controls">
+        <button class="notify-bell-btn" id="btn-notify-toggle" title="Notifications" aria-label="Notifications">
+          🔔
+          <span class="notify-badge hidden" id="notify-badge">0</span>
+        </button>
+        <div class="notify-panel hidden" id="notify-panel">
+          <div class="notify-panel-header">
+            <span class="notify-panel-title">🔔 Notifications</span>
+            <button type="button" class="btn-clear-notify" id="btn-clear-notify" title="Clear notifications">Clear</button>
+          </div>
+          <div class="notify-browser-row">
+            <button type="button" class="btn-enable-web-notify" id="btn-enable-web-notify">🌐 Enable Web Alerts</button>
+          </div>
+          <div class="notify-list" id="notify-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
       </div>
 
       <!-- Music Controls -->
@@ -215,8 +256,12 @@
         <li><button class="nav-item" data-screen="screen-achievements"><span class="nav-icon">🏆</span> Trophies</button></li>
         <li><button class="nav-item" data-screen="screen-leaderboard"><span class="nav-icon">📊</span> Rankings</button></li>
         <li><button class="nav-item" data-screen="screen-boss"><span class="nav-icon">💀</span> Boss Battle</button></li>
+        <li><button class="nav-item" data-screen="screen-shop"><span class="nav-icon">🛒</span> Item Shop</button></li>
+        <li><button class="nav-item" id="btn-menu-notify"><span class="nav-icon">🔔</span> Notifications <span class="nav-notify-badge hidden" id="nav-notify-badge">0</span></button></li>
         <li class="nav-divider"></li>
-        <li><button class="nav-item nav-ai-shortcut" id="btn-menu-ai"><span class="nav-icon">🤖</span> AI Mission Forge</button></li>
+        <li><button class="nav-item" id="btn-demo-preset-nav" style="color:#fbbf24;font-weight:700;"><span class="nav-icon">⚡</span> Demo Preset (Lv 5)</button></li>
+        <li><button class="nav-item" id="btn-demo-preset-off-nav" style="color:#f87171;font-weight:700;"><span class="nav-icon">🛑</span> Demo Preset OFF</button></li>
+        <li><button class="nav-item nav-ai-shortcut" id="btn-menu-ai"><span class="nav-icon">🧠</span> Grok Research Forge</button></li>
         <li><button class="nav-item nav-logout" id="btn-logout"><span class="nav-icon">🚪</span> Logout</button></li>
       </ul>
     </div>
@@ -228,8 +273,16 @@
       <div class="dashboard-title-area">
         <h2 class="screen-title">⚔️ Quest Board</h2>
         <p class="screen-subtitle">Complete daily missions to earn XP, maintain streaks, and battle procrastination.</p>
+        <div class="dash-preset-btn-group">
+          <button type="button" class="btn-demo-preset-dash" id="btn-demo-preset-dash" title="Activate Evaluator Demo Preset (Lv 5 + 7-Day Streak + 500 Gold)">
+            <span>⚡ Evaluator Demo Preset (Lv 5 + 7-Day Streak + 500g)</span>
+          </button>
+          <button type="button" class="btn-demo-preset-off-dash" id="btn-demo-preset-off-dash" title="Turn Demo Preset OFF (Reset to Starter Hero)">
+            <span>🛑 Demo Preset OFF</span>
+          </button>
+        </div>
       </div>
-      <div class="quest-tabs">
+      <div class="quest-tabs" id="quest-tabs">
         <button class="quest-tab active" data-tab="daily">Daily</button>
         <button class="quest-tab" data-tab="weekly">Weekly</button>
         <button class="quest-tab" data-tab="epic">Epic</button>
@@ -240,11 +293,11 @@
     <!-- AI Adaptive Mission Banner -->
     <div class="ai-adaptive-banner" id="ai-adaptive-banner">
       <div class="ai-banner-content">
-        <span class="ai-banner-badge">✨ AI ORACLE RECOMMENDATION</span>
-        <h3 class="ai-banner-title" id="ai-banner-title">Ready for an adaptive mission?</h3>
-        <p class="ai-banner-desc" id="ai-banner-desc">Let Gemini analyze your current progress and generate tailored goals for today.</p>
+        <span class="ai-banner-badge">🧠 GROK RESEARCH ORACLE</span>
+        <h3 class="ai-banner-title" id="ai-banner-title">Ready for a deep research challenge?</h3>
+        <p class="ai-banner-desc" id="ai-banner-desc">Let Grok formulate high-rigor investigations and intellectual inquiry missions.</p>
       </div>
-      <button class="btn-primary btn-banner-ai" id="btn-banner-ai">🤖 Generate AI Missions</button>
+      <button class="btn-primary btn-banner-ai" id="btn-banner-ai">🧠 Generate Research Missions</button>
     </div>
 
     <div class="quest-stats-bar">
@@ -267,18 +320,18 @@
     <div class="empty-state hidden" id="empty-state">
       <div class="empty-icon">🗡️</div>
       <h3 class="empty-title">No Active Quests</h3>
-      <p class="empty-desc">Your quest log is clear! Forge a manual quest or let Gemini AI generate custom missions for you.</p>
+      <p class="empty-desc">Your quest log is clear! Forge a manual quest or let Grok formulate deep research challenges for you.</p>
       <div class="empty-btn-group">
-        <button class="btn-primary btn-empty-add" id="btn-empty-ai">🤖 AI Quest Generator</button>
+        <button class="btn-primary btn-empty-add" id="btn-empty-ai">🧠 Grok Research Forge</button>
         <button class="btn-secondary btn-empty-add" id="btn-empty-add">+ Manual Quest</button>
       </div>
     </div>
 
     <!-- Floating Action Buttons -->
     <div class="fab-group">
-      <button class="fab fab-ai" id="fab-ai-quest" title="AI Mission Forge">
-        <span class="fab-icon">🤖</span>
-        <span class="fab-label">AI FORGE</span>
+      <button class="fab fab-ai" id="fab-ai-quest" title="Grok Research Forge">
+        <span class="fab-icon">🧠</span>
+        <span class="fab-label">RESEARCH</span>
       </button>
       <button class="fab" id="fab-add-quest" title="Manual Quest Forge">
         <span class="fab-icon">⚔️</span>
@@ -333,11 +386,25 @@
 
   <!-- ===================== LEADERBOARD ===================== -->
   <section id="screen-leaderboard" class="screen game-screen">
-    <h2 class="screen-title">📊 Arena Rankings</h2>
+    <div class="leaderboard-header-row">
+      <div>
+        <h2 class="screen-title">📊 Arena Rankings</h2>
+        <p class="screen-subtitle">Compete with heroes worldwide for XP supremacy</p>
+      </div>
+      <div class="leaderboard-cycle-bar">
+        <span class="lb-cycle-pill">📅 Cycle: <strong id="lb-cycle-text">Active Week</strong></span>
+        <button type="button" class="btn-reset-lb" id="btn-reset-weekly-lb" title="Reset Weekly Tournament & Archive Champions">
+          🔄 Reset Weekly Board
+        </button>
+      </div>
+    </div>
+
+    <!-- Champions Archive Banner (Shown after weekly reset) -->
+    <div class="lb-champions-banner hidden" id="lb-champions-banner"></div>
 
     <div class="leaderboard-tabs">
-      <button class="lb-tab active" data-lb="weekly">Weekly</button>
-      <button class="lb-tab" data-lb="alltime">All Time</button>
+      <button class="lb-tab active" data-lb="weekly">Weekly Tournament</button>
+      <button class="lb-tab" data-lb="alltime">All-Time Hall of Fame</button>
     </div>
 
     <div class="leaderboard-podium" id="leaderboard-podium">
@@ -361,7 +428,18 @@
   <section id="screen-boss" class="screen game-screen">
     <div class="boss-arena" id="boss-arena">
       <div class="boss-header">
-        <h2 class="boss-name" id="boss-name">💀 Procrastination Dragon</h2>
+        <div class="boss-header-row">
+          <h2 class="boss-name" id="boss-name">💀 Procrastination Dragon</h2>
+          <div class="boss-hero-stance-bar" id="boss-hero-stance-bar">
+            <span class="stance-label">Hero Stance:</span>
+            <div class="stance-buttons">
+              <button type="button" class="stance-btn active" data-class="warrior" id="stance-warrior">⚔️ Warrior</button>
+              <button type="button" class="stance-btn" data-class="mage" id="stance-mage">🧙 Mage</button>
+              <button type="button" class="stance-btn" data-class="rogue" id="stance-rogue">🗡️ Rogue</button>
+              <button type="button" class="stance-btn" data-class="scholar" id="stance-scholar">📖 Scholar</button>
+            </div>
+          </div>
+        </div>
         <div class="boss-hp-container">
           <div class="boss-hp-bar">
             <div class="boss-hp-fill" id="boss-hp-fill" style="width: 100%"></div>
@@ -370,9 +448,51 @@
         </div>
       </div>
 
+      <!-- 2D World Battle Stage -->
       <div class="boss-visual" id="boss-visual">
-        <div class="boss-sprite" id="boss-sprite">🐉</div>
-        <div class="boss-effects" id="boss-effects"></div>
+        <div class="stage-world" id="stage-world">
+          <!-- Background Ambiance -->
+          <div class="stage-sky-backdrop"></div>
+          <div class="stage-mountains-backdrop"></div>
+          <div class="stage-embers-layer" id="stage-embers"></div>
+
+          <!-- Stone Battle Ground Platform -->
+          <div class="stage-ground-layer">
+            <div class="stage-runic-circle"></div>
+          </div>
+
+          <!-- Combat Arena: Hero vs Dragon -->
+          <div class="stage-combat-area" id="stage-combat-area">
+            <!-- Hero Combatant (Left) -->
+            <div class="combatant hero-combatant" id="hero-combatant" data-class="warrior">
+              <div class="hero-nameplate" id="hero-nameplate">
+                <span class="hero-np-name" id="hero-np-name">Hero</span>
+                <span class="hero-np-class" id="hero-np-class">Warrior</span>
+              </div>
+              <div class="hero-sprite-box" id="hero-sprite-box">
+                <!-- SVG rendered dynamically -->
+              </div>
+              <div class="combatant-shadow hero-shadow"></div>
+            </div>
+
+            <!-- Midfield Projectiles & Slash FX Layer -->
+            <div class="combat-fx-overlay" id="combat-fx-overlay"></div>
+
+            <!-- Boss Combatant (Right) -->
+            <div class="combatant boss-combatant" id="boss-combatant">
+              <div class="boss-nameplate">
+                <span class="boss-np-badge">BOSS</span>
+                <span class="boss-np-title" id="boss-np-title">Procrastination Dragon</span>
+              </div>
+              <div class="boss-sprite-box" id="boss-sprite-box">
+                <div class="boss-sprite" id="boss-sprite">🐉</div>
+              </div>
+              <div class="combatant-shadow boss-shadow"></div>
+              <div class="boss-effects" id="boss-effects"></div>
+              <div class="boss-damage-numbers" id="boss-damage-numbers"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="boss-description" id="boss-description">
@@ -400,6 +520,52 @@
     </div>
   </section>
 
+  <!-- ===================== ITEM SHOP SCREEN ===================== -->
+  <section id="screen-shop" class="screen game-screen">
+    <div class="shop-container">
+      <div class="shop-header">
+        <h2 class="screen-title">🛒 Cyber Black Market</h2>
+        <p class="screen-subtitle">Spend your hard-earned gold on tactical utility items and boss weapons</p>
+        <div class="shop-balance-badge">
+          <span>Available Balance:</span>
+          <span class="shop-balance-gold">💰 <span id="shop-gold-display">0</span> Gold</span>
+        </div>
+      </div>
+
+      <div class="shop-grid">
+        <!-- Item 1: XP Potion -->
+        <div class="shop-card">
+          <div class="shop-card-badge">INSTANT BOOST</div>
+          <div class="shop-card-icon">🧪</div>
+          <h3 class="shop-card-title">XP Elixir</h3>
+          <p class="shop-card-desc">Concentrated neural knowledge elixir. Instantly grants <strong>+150 XP</strong> and accelerates hero progression.</p>
+          <div class="shop-card-cost">💰 150 Gold</div>
+          <button class="btn-primary btn-shop-buy" id="btn-buy-xp">Buy XP Elixir</button>
+        </div>
+
+        <!-- Item 2: Streak Shield -->
+        <div class="shop-card">
+          <div class="shop-card-badge" id="badge-shield-status">PROTECTION</div>
+          <div class="shop-card-icon">🛡️</div>
+          <h3 class="shop-card-title">Streak Aegis</h3>
+          <p class="shop-card-desc">An impenetrable cyber shield. Prevents your active daily streak from resetting if you miss a day.</p>
+          <div class="shop-card-cost">💰 500 Gold</div>
+          <button class="btn-primary btn-shop-buy" id="btn-buy-shield">Equip Shield</button>
+        </div>
+
+        <!-- Item 3: Boss Bomb -->
+        <div class="shop-card">
+          <div class="shop-card-badge">COMBAT ORDNANCE</div>
+          <div class="shop-card-icon">💣</div>
+          <h3 class="shop-card-title">Boss Bomb</h3>
+          <p class="shop-card-desc">High-yield plasma charge. Instantly strikes the active Boss in the Arena for <strong>2 direct damage</strong>!</p>
+          <div class="shop-card-cost">💰 250 Gold</div>
+          <button class="btn-primary btn-shop-buy" id="btn-buy-bomb">Launch Bomb</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===================== MANUAL QUEST CREATION MODAL ===================== -->
   <div class="modal-overlay hidden" id="modal-quest-create">
     <div class="modal-content quest-forge">
@@ -421,7 +587,6 @@
             <label class="form-label">Category</label>
             <select id="quest-category" class="form-input form-select">
               <option value="study">📚 Study</option>
-              <option value="exercise">💪 Exercise</option>
               <option value="code" selected>💻 Code</option>
               <option value="wellness">🧘 Wellness</option>
               <option value="work">💼 Work</option>
@@ -481,22 +646,21 @@
     <div class="modal-content quest-forge ai-forge-modal">
       <div class="modal-header">
         <div class="modal-title-wrap">
-          <h2 class="modal-title">🤖 Gemini AI Mission Forge</h2>
-          <span class="ai-powered-tag">Powered by Google Gemini 3.6 Flash</span>
+          <h2 class="modal-title">🧠 Grok Research Forge</h2>
+          <span class="ai-powered-tag">Powered by xAI Grok</span>
         </div>
         <button class="modal-close" id="modal-close-ai">✕</button>
       </div>
 
       <div class="quest-form" id="ai-form">
         <div class="form-group">
-          <label class="form-label">What goal or habit do you want to conquer?</label>
-          <input type="text" id="ai-goal" class="form-input" placeholder="e.g., Learn React hooks, Master DSA trees, Run 5km, Study physics..." maxlength="120" />
+          <label class="form-label">What research domain or hypothesis do you want to investigate?</label>
+          <input type="text" id="ai-goal" class="form-input" placeholder="e.g., Transformer Attention Mechanics, Distributed Consensus, Epigenetics..." maxlength="120" />
           <div class="ai-suggestions">
-            <span class="ai-tag" data-tag="Learn Full-Stack Web Dev">💻 Full-Stack Dev</span>
-            <span class="ai-tag" data-tag="Prepare for LeetCode Interview">🧠 DSA Sprint</span>
-            <span class="ai-tag" data-tag="Strength training & 50 pushups">💪 Fitness Workout</span>
-            <span class="ai-tag" data-tag="Study Machine Learning & Neural Nets">🤖 ML / AI Study</span>
-            <span class="ai-tag" data-tag="Deep focus work & clean workspace">🧘 Deep Focus</span>
+            <span class="ai-tag" data-tag="Transformer Attention Mechanics">🔬 Transformer Attention</span>
+            <span class="ai-tag" data-tag="Distributed Consensus Algorithms (Raft vs PBFT)">⚡ Raft vs PBFT</span>
+            <span class="ai-tag" data-tag="Biochemical Pathways of Hypertrophy">🧬 Hypertrophy Pathways</span>
+            <span class="ai-tag" data-tag="Micro-kernel vs Monolithic OS Security">🛡️ Microkernel Security</span>
           </div>
         </div>
 
@@ -527,7 +691,6 @@
             <select id="ai-category" class="form-input form-select">
               <option value="auto">✨ Auto-Detect with AI</option>
               <option value="study">📚 Study</option>
-              <option value="exercise">💪 Exercise</option>
               <option value="code">💻 Code</option>
               <option value="wellness">🧘 Wellness</option>
               <option value="work">💼 Work</option>
@@ -545,17 +708,18 @@
         </div>
 
         <button type="button" class="btn-primary btn-forge btn-ai-pulse" id="btn-ai-generate">
-          ⚡ GENERATE 3 ADAPTIVE MISSIONS
+          ⚡ GENERATE 3 RESEARCH MISSIONS
         </button>
 
         <div class="ai-loading hidden" id="ai-loading">
           <div class="ai-spinner"></div>
-          <p class="ai-loading-text">Gemini AI is crafting adaptive RPG missions tailored to your class & stats...</p>
+          <p class="ai-loading-text" id="ai-loading-text">Analyzing player class & streak...</p>
+          <div class="ai-loading-bar"><div class="ai-loading-bar-fill"></div></div>
         </div>
 
         <div class="ai-results hidden" id="ai-results">
           <div class="ai-results-header">
-            <h4 class="ai-results-title">🎯 Crafted RPG Missions</h4>
+            <h4 class="ai-results-title">🎯 Rigorous Research Missions</h4>
             <span class="ai-results-subtitle">Review and accept into your Quest Board:</span>
           </div>
           <div id="ai-quest-list" class="ai-quest-list"></div>
@@ -573,7 +737,7 @@
   <div class="modal-overlay hidden" id="modal-ai-breakdown">
     <div class="modal-content quest-forge">
       <div class="modal-header">
-        <h2 class="modal-title">🤖 AI Tactical Breakdown</h2>
+        <h2 class="modal-title">🧠 Grok Research Breakdown</h2>
         <button class="modal-close" id="modal-close-breakdown">✕</button>
       </div>
       <div class="breakdown-modal-body">
@@ -582,13 +746,84 @@
         
         <div class="ai-loading hidden" id="breakdown-loading">
           <div class="ai-spinner"></div>
-          <p>Gemini AI is dissecting this quest into tactical sub-tasks...</p>
+          <p>Grok AI is dissecting this inquiry into tactical investigative milestones...</p>
         </div>
 
         <div id="breakdown-steps-list" class="breakdown-steps-list"></div>
         <button type="button" class="btn-primary" id="btn-breakdown-add-subquests" style="margin-top:15px;width:100%;">
-          ➕ Add These Sub-Quests to Board
+          ➕ Add These Research Milestones to Board
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MISSION VERIFICATION / PROOF-OF-WORK MODAL ===================== -->
+  <div class="modal-overlay hidden" id="modal-proof-of-work">
+    <div class="modal-content quest-forge pow-modal">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h2 class="modal-title">🛡️ Mission Verification & Proof-of-Work</h2>
+          <span class="pow-badge-pill">AI Verification Judge Active (All Tiers)</span>
+        </div>
+        <button class="modal-close" id="modal-close-pow">✕</button>
+      </div>
+
+      <div class="pow-body">
+        <p class="pow-lead">
+          Every mission requires verified proof-of-work evaluated by our 3-Stage Cognitive Verification Pipeline (Heuristics &rarr; SerpApi Ground Truth &rarr; Grok Judge) to ensure genuine mastery. Provide a key takeaway reflection or artifact link to claim your <strong>+10% Proof Bonus</strong>!
+        </p>
+
+        <!-- Target Quest Summary Card -->
+        <div class="pow-quest-preview" id="pow-quest-preview">
+          <div class="pow-qp-header">
+            <span class="pow-qp-cat" id="pow-qp-cat">💻 CODE</span>
+            <span class="pow-qp-diff" id="pow-qp-diff">💀💀💀</span>
+          </div>
+          <h3 class="pow-qp-title" id="pow-qp-title">Target Quest Name</h3>
+          <p class="pow-qp-desc" id="pow-qp-desc">Target quest objective and requirements.</p>
+          <div class="pow-reward-preview">
+            <span>Base Reward: <strong id="pow-base-xp">+75 XP</strong> | <strong id="pow-base-gold">+30g</strong></span>
+            <span class="pow-bonus-highlight">🛡️ With Proof (+10%): <strong id="pow-total-xp">+83 XP</strong> | <strong id="pow-total-gold">+33g</strong></span>
+          </div>
+        </div>
+
+        <div class="pow-proof-form">
+          <!-- Option A: Self-Attestation -->
+          <div class="form-group">
+            <label class="form-label">
+              <span>Option A: 1-Sentence Reflection / Key Takeaway</span>
+              <span class="form-hint" style="color:var(--text-muted);font-size:0.8rem;margin-left:6px;">(What core concept did you prove or solve?)</span>
+            </label>
+            <textarea id="pow-reflection" class="form-input form-textarea" rows="2" placeholder="e.g. Dissected PBFT 3-phase commit quorum slices and confirmed 3f+1 resilience under network partitions..."></textarea>
+          </div>
+
+          <!-- Option B: Verifiable Link / Artifact -->
+          <div class="form-group">
+            <label class="form-label">
+              <span>Option B: Proof Artifact URL (Optional)</span>
+              <span class="form-hint" style="color:var(--text-muted);font-size:0.8rem;margin-left:6px;">(GitHub commit/PR, Strava log, doc, or note)</span>
+            </label>
+            <input type="url" id="pow-link" class="form-input" placeholder="https://github.com/your-username/repo/commit/..." />
+          </div>
+
+          <div class="pow-badge-banner">
+            <span class="pow-badge-icon">🛡️</span>
+            <span class="pow-badge-text"><strong>Cognitive Verification Engine</strong>: 1. Anti-Trivial Heuristics &bull; 2. SerpApi Ground Truth &bull; 3. Grok Multi-Criteria Judge (Plagiarism, Accuracy, Relevance).</span>
+          </div>
+
+          <div class="pow-pipeline-status hidden" id="pow-pipeline-status">
+            <div class="pipeline-step" id="step-heuristic"><span class="step-icon">⚪</span> <span>1. Rule-Based Heuristic Anti-Trivial Check</span></div>
+            <div class="pipeline-step" id="step-serpapi"><span class="step-icon">⚪</span> <span>2. SerpApi Ground Truth Retrieval</span></div>
+            <div class="pipeline-step" id="step-judge"><span class="step-icon">⚪</span> <span>3. Grok AI Verification Judge</span></div>
+          </div>
+
+          <div class="pow-actions">
+            <button type="button" class="btn-primary btn-pow-submit" id="btn-pow-submit">
+              🛡️ VERIFY & CLAIM (+10% BONUS)
+            </button>
+            <p class="pow-error hidden" id="pow-error"></p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -617,6 +852,10 @@
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- Optional Local Config (ignored by Git) -->
+  <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
